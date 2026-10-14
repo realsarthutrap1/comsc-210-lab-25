@@ -2,6 +2,7 @@
 // adapted from the instructor race starter and chrono demo
 
 #include <iostream>
+#include <algorithm>
 #include <chrono>
 #include <fstream>
 #include <iomanip>
@@ -22,6 +23,7 @@ struct RaceResult {
 
 template <typename Container>
 long long read_codes(Container& codes, const string& filename);
+RaceResult sort_codes(vector<string>& vector_codes, list<string>& list_codes);
 void print_results(const vector<RaceResult>& results);
 
 int main() {
@@ -36,6 +38,7 @@ int main() {
         reading.list_time = read_codes(list_codes, "codes.txt");
         reading.set_time = read_codes(set_codes, "codes.txt");
         results.push_back(reading);
+        results.push_back(sort_codes(vector_codes, list_codes));
         print_results(results);
     } catch (const runtime_error& error) {
         cerr << error.what() << endl;
@@ -66,6 +69,21 @@ long long read_codes(Container& codes, const string& filename) {
     return duration_cast<nanoseconds>(end - start).count();
 }
 
+RaceResult sort_codes(vector<string>& vector_codes, list<string>& list_codes) {
+    // a set is already sorted so its sorting time stays at -1
+    RaceResult sorting{"Sorting", 0, 0, -1};
+    auto start = steady_clock::now();
+    sort(vector_codes.begin(), vector_codes.end());
+    auto end = steady_clock::now();
+    sorting.vector_time = duration_cast<nanoseconds>(end - start).count();
+
+    start = steady_clock::now();
+    list_codes.sort();
+    end = steady_clock::now();
+    sorting.list_time = duration_cast<nanoseconds>(end - start).count();
+    return sorting;
+}
+
 void print_results(const vector<RaceResult>& results) {
     cout << "Data structure races (nanoseconds)\n";
     cout << left << setw(16) << "Operation" << right
@@ -75,4 +93,5 @@ void print_results(const vector<RaceResult>& results) {
              << setw(16) << result.vector_time << setw(16) << result.list_time
              << setw(16) << result.set_time << endl;
     }
+    cout << "-1 means the set is already sorted\n";
 }
