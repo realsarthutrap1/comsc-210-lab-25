@@ -1,0 +1,5 @@
+lab25
+*.exe
+*.o
+*.dSYM/
+.DS_Store
