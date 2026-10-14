@@ -6,6 +6,7 @@
 #include <chrono>
 #include <fstream>
 #include <iomanip>
+#include <iterator>
 #include <list>
 #include <set>
 #include <stdexcept>
@@ -24,6 +25,12 @@ struct RaceResult {
 template <typename Container>
 long long read_codes(Container& codes, const string& filename);
 RaceResult sort_codes(vector<string>& vector_codes, list<string>& list_codes);
+RaceResult insert_codes(vector<string>& vector_codes, list<string>& list_codes,
+                        set<string>& set_codes);
+template <typename Container>
+long long delete_middle(Container& codes);
+RaceResult delete_codes(vector<string>& vector_codes, list<string>& list_codes,
+                        set<string>& set_codes);
 void print_results(const vector<RaceResult>& results);
 
 int main() {
@@ -39,6 +46,8 @@ int main() {
         reading.set_time = read_codes(set_codes, "codes.txt");
         results.push_back(reading);
         results.push_back(sort_codes(vector_codes, list_codes));
+        results.push_back(insert_codes(vector_codes, list_codes, set_codes));
+        results.push_back(delete_codes(vector_codes, list_codes, set_codes));
         print_results(results);
     } catch (const runtime_error& error) {
         cerr << error.what() << endl;
@@ -82,6 +91,49 @@ RaceResult sort_codes(vector<string>& vector_codes, list<string>& list_codes) {
     end = steady_clock::now();
     sorting.list_time = duration_cast<nanoseconds>(end - start).count();
     return sorting;
+}
+
+RaceResult insert_codes(vector<string>& vector_codes, list<string>& list_codes,
+                        set<string>& set_codes) {
+    RaceResult inserting{"Inserting", 0, 0, 0};
+    // finding the middle is included in each operation's time
+    auto start = steady_clock::now();
+    auto vector_middle = next(vector_codes.begin(), vector_codes.size() / 2);
+    vector_codes.insert(vector_middle, "TESTCODE");
+    auto end = steady_clock::now();
+    inserting.vector_time = duration_cast<nanoseconds>(end - start).count();
+
+    start = steady_clock::now();
+    auto list_middle = next(list_codes.begin(), list_codes.size() / 2);
+    list_codes.insert(list_middle, "TESTCODE");
+    end = steady_clock::now();
+    inserting.list_time = duration_cast<nanoseconds>(end - start).count();
+
+    start = steady_clock::now();
+    set_codes.insert("TESTCODE");
+    end = steady_clock::now();
+    inserting.set_time = duration_cast<nanoseconds>(end - start).count();
+    return inserting;
+}
+
+template <typename Container>
+long long delete_middle(Container& codes) {
+    auto start = steady_clock::now();
+    if (!codes.empty()) {
+        auto middle = next(codes.begin(), codes.size() / 2);
+        codes.erase(middle);
+    }
+    auto end = steady_clock::now();
+    return duration_cast<nanoseconds>(end - start).count();
+}
+
+RaceResult delete_codes(vector<string>& vector_codes, list<string>& list_codes,
+                        set<string>& set_codes) {
+    RaceResult deleting{"Deleting", 0, 0, 0};
+    deleting.vector_time = delete_middle(vector_codes);
+    deleting.list_time = delete_middle(list_codes);
+    deleting.set_time = delete_middle(set_codes);
+    return deleting;
 }
 
 void print_results(const vector<RaceResult>& results) {
